@@ -1,25 +1,40 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import SeasonDisplay from './SeasonDisplay';
+import Spinner from'./Spinner';
 
+// Use React.Component when you need to use 'state'
 class App extends React.Component{
-    constructor(props) {
-        super(props);
+    state = { lat: null, errorMessage: '' };
 
-        // This is the only time you do a direct assignment to the state.
-        this.state = { lat: null };
-
+    // Use this for loading data instead of using the constructor.
+    componentDidMount() {
         window.navigator.geolocation.getCurrentPosition(
-            position => {
-                // To update we called setState!!
-                this.setState({ lat: position.coords.latitude });
-            },
-            err => console.log(err)
+            position => this.setState({ lat: position.coords.latitude }),
+            err => this.setState({errorMessage: err.message })
         );
     }
 
-    // React requires render function.
+    // Helper method to handle conditional logic
+    renderContent() {
+        if(this.state.errorMessage && !this.state.lat){
+            return <div>Error: {this.state.errorMessage}</div>;
+        }
+        
+        if (!this.state.errorMessage && this.state.lat){
+            return <SeasonDisplay lat={this.state.lat} />;
+        }
+
+        return <Spinner message="Please accept location request" />;
+    };
+
+    // If there is conditional logic move it out to another function. AVOID consditional login in redner method.
     render() {
-        return <div>Latitude: {this.state.lat}</div>
+        return(
+            <div className="border red">
+                {this.renderContent()}
+            </div>
+        )
     }
 }
 
